@@ -5,6 +5,12 @@ module Cql
       class InvalidBindVariable < Exception; end
       class UnescapableObject < Exception; end
     end
+    
+    class NullValue
+      def to_s
+        'NULL'
+      end
+    end
 
     def self.escape(obj)
       obj.gsub("'", "''")
@@ -21,7 +27,7 @@ module Cql
         obj.to_s
       elsif obj.kind_of?(TrueClass) or obj.kind_of?(FalseClass)
         obj.to_s
-      elsif obj.nil?
+      elsif obj.kind_of?(NullValue)
         obj.to_s
       else
         raise Error::UnescapableObject, "Unable to escape object of class #{obj.class}"
@@ -41,6 +47,8 @@ module Cql
         obj
       elsif obj.kind_of?(TrueClass) or obj.kind_of?(FalseClass)
         obj
+      elsif obj.nil?
+        NullValue.new
       else
         #RUBY_VERSION >= "1.9" ? escape(obj.to_s.dup.force_encoding('ASCII-8BIT')) : escape(obj.to_s.dup)
         escape(obj.to_s.dup)
