@@ -2,8 +2,12 @@ module Cql::Model::PersistenceMethods
   extend ::ActiveSupport::Concern
 
   def save
-    updates = Cql::Statement.clauses(attributes).join(', ')
-    query = Cql::Statement.sanitize("UPDATE #{table_name} SET #{updates} WHERE #{primary_key} = ?", [primary_value])
+    atts = attributes
+    fields = atts.keys.join(', ')
+    placeholders = Cql::Statement.placeholders(atts.length).join(', ')
+    values = atts.values
+
+    query = Cql::Statement.sanitize("INSERT INTO #{table_name} (#{fields}) VALUES (#{placeholders})", values)
     Cql::Base.connection.execute(query)
 
     @persisted = true
@@ -15,7 +19,8 @@ module Cql::Model::PersistenceMethods
   end
 
   def delete
-    query = Cql::Statement.sanitize("DELETE FROM #{table_name} WHERE #{primary_key} = ?", [primary_value])
+    clauses = Cql::Statement.clauses(primary_key_attributes).join(' AND ')
+    query = Cql::Statement.sanitize("DELETE FROM #{table_name} WHERE #{clauses}")
     Cql::Base.connection.execute(query)
 
     @deleted = true

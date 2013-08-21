@@ -29,8 +29,6 @@ module Cql
     include Cql::Model::FinderMethods
     include Cql::Model::PersistenceMethods
 
-    attr_reader :primary_value
-
     def initialize(attributes = {}, options = {})
       self.class.columns.each do |key, config|
         class_eval do
@@ -40,7 +38,6 @@ module Cql
       end
 
       @metadata = options[:metadata]
-      @primary_value = attributes[primary_key.to_sym] || attributes[primary_key.to_s]
       @persisted = false
       @deleted = false
 
@@ -58,6 +55,14 @@ module Cql
         result[key] = instance_variable_get("@#{config[:attribute_name].to_s}".to_sym)
       end
       result
+    end
+    
+    def primary_key_attributes
+      attributes.select { |k, v| primary_key.include?(k) }
+    end
+    
+    def primary_value
+      instance_variable_get("@#{primary_key.first}")
     end
 
     def quoted_primary_value

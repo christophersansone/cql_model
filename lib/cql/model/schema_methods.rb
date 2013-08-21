@@ -22,8 +22,10 @@ module Cql::Model::SchemaMethods
       @consistency ||= consistency_value.nil? ? :quorum : consistency_value.to_sym
     end
 
-    def primary_key(key_name = nil)
-      @primary_key ||= key_name.nil? ? 'id' : key_name.to_s
+    def primary_key(*key_names)
+      @primary_key ||= key_names.any? ? key_names : [:id]
+      @primary_key.each { |f| column(f) unless columns.has_key?(f.to_sym) }
+      @primary_key
     end
 
     def column(attribute_name, options = {})

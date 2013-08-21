@@ -8,9 +8,10 @@ module Cql::Model::FinderMethods
     end
 
     def find(*args)
+      raise StandardError, '#find cannot be called on models with composite primary keys' if primary_key.length > 1
       values = args.to_a.flatten
-      placeholders = ('?' * values.count).chars.to_a.join(', ')
-      query = Cql::Statement.sanitize("SELECT * FROM #{table_name} WHERE #{primary_key} IN (#{placeholders})", values)
+      placeholders = Cql::Statement.placeholders(values.count).join(', ')
+      query = Cql::Statement.sanitize("SELECT * FROM #{table_name} WHERE #{primary_key.first} IN (#{placeholders})", values)
 
       if args[0].is_a?(Array) || args.size > 1
         execute(query).to_a

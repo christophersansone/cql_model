@@ -74,5 +74,9 @@ module Cql
       hash.each_pair { |key, value| result << "#{key} = #{quote(cast_to_cql(value))}" }
       result
     end
+    
+    def self.placeholders(count)
+      ('?' * count).chars.to_a
+    end
   end
 end
