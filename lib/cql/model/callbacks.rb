@@ -11,12 +11,18 @@ module Cql::Model::Callbacks
 
   def save(*args)
     run_callbacks(:save) do
-      run_callbacks(persisted? ? :update : :create) { super }
+      run_callbacks(persisted? ? :update : :create) do
+        super
+        self
+      end
     end
   end
 
   def destroy(*args)
-    run_callbacks(:destroy) { super }
+    run_callbacks(:destroy) do
+      super
+      self
+    end
   end
 
 end
