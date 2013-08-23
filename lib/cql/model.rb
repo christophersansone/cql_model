@@ -7,6 +7,7 @@ require 'cql/base'
 require 'cql/statement'
 require 'cql/model/version'
 
+require 'cql/model/callbacks'
 require 'cql/model/schema_methods'
 require 'cql/model/finder_methods'
 require 'cql/model/persistence_methods'
