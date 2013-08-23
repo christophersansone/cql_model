@@ -73,6 +73,12 @@ module Cql
     def persisted?
       @persisted
     end
+    
+    def generate_timeuuid
+      Cql::TimeUuid::Generator.new.next
+    end
+    
+    alias_method :generate_uuid, :generate_timeuuid
 
     def self.execute(query)
       cql_results = Cql::Base.connection.execute(query, consistency)
