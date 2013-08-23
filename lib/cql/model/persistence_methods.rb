@@ -27,6 +27,8 @@ module Cql::Model::PersistenceMethods
     @persisted = false
     self
   end
+  
+  alias_method :destroy, :delete
 
   module ClassMethods
 

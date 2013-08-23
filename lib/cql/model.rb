@@ -28,6 +28,7 @@ module Cql
     include Cql::Model::SchemaMethods
     include Cql::Model::FinderMethods
     include Cql::Model::PersistenceMethods
+    include Cql::Model::Callbacks
 
     def initialize(attributes = {}, options = {})
       self.class.columns.each do |key, config|
