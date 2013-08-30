@@ -1,4 +1,5 @@
 module Cql::Model::AttributeMethods
+  extend ActiveSupport::Concern
   include ActiveModel::AttributeMethods
   
   def attributes
