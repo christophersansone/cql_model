@@ -5,7 +5,7 @@ module Cql::Model::AttributeMethods
   def attributes
     result = {}
     self.class.columns.each do |key, config|
-      result[key] = instance_variable_get("@#{config[:attribute_name].to_s}".to_sym)
+      result[key] = read_attribute(config[:attribute_name])
     end
     result
   end

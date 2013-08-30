@@ -20,7 +20,6 @@ module Cql
 
     #include ActiveModel::Callbacks
     include ActiveModel::Conversion
-    include ActiveModel::Dirty
     #include ActiveModel::Observing
     include ActiveModel::Serialization
     #include ActiveModel::Translation
@@ -31,37 +30,39 @@ module Cql
     include Cql::Model::FinderMethods
     include Cql::Model::PersistenceMethods
     include Cql::Model::Callbacks
+    include Cql::Model::Dirty
 
     def initialize(attributes = {}, options = {})
       self.class.columns.each do |key, config|
-        a = config[:attribute_name].to_sym
-        
-        define_method a do
-          instance_variable_get("@_#{a}")
-        end
-        
-        unless config[:read_only]
-          define_method "#{a}=".to_sym do |val|
-            send("#{a}_will_change!".to_sym) unless val == instance_variable_get("@_#{a}")
-            instance_variable_set("@_#{a}", val)
+        name = config[:attribute_name].to_sym
+
+        module_eval <<-RUBY, __FILE__, __LINE__+1
+          def #{name}
+            read_attribute(#{name.inspect})
           end
+        RUBY
+
+        unless config[:read_only]
+          module_eval <<-RUBY, __FILE__, __LINE__+1
+            def #{name}=(value)
+              write_attribute(#{name.inspect}, value)
+            end
+          RUBY
         end
-        
+                          
         class_eval do
           #attr_reader config[:attribute_name]
           #attr_writer config[:attribute_name] unless config[:read_only]
-          define_attribute_method a
+          define_attribute_method name
         end
       end
 
+      @_attributes = {}
       @metadata = options[:metadata]
       @persisted = false
       @deleted = false
 
-      attributes.each do |key, value|
-        attr_name = "@#{key.to_s}".to_sym
-        instance_variable_set(attr_name, value)
-      end
+      attributes.each { |key, value| write_attribute(key, value) }
 
       self
     end
@@ -71,7 +72,7 @@ module Cql
     end
     
     def primary_value
-      instance_variable_get("@#{primary_key.first}")
+      read_attribute(primary_key.first)
     end
 
     def quoted_primary_value
@@ -92,5 +93,20 @@ module Cql
       cql_results = Cql::Base.connection.execute(query, consistency)
       Cql::Model::QueryResult.new(cql_results, self)
     end
+    
+    private
+    
+    def read_attribute(name)
+      @_attributes[name.to_sym]
+    end
+    
+    def write_attribute(name, val)
+      if val.nil?
+        @_attributes.delete(name.to_sym)
+      else
+        @_attributes[name.to_sym] = name
+      end
+    end
+
   end
 end
