@@ -8,6 +8,7 @@ require 'cql/statement'
 require 'cql/model/version'
 
 require 'cql/model/callbacks'
+require 'cql/model/attribute_methods'
 require 'cql/model/schema_methods'
 require 'cql/model/finder_methods'
 require 'cql/model/persistence_methods'
@@ -17,7 +18,6 @@ module Cql
   class Model
     extend ActiveModel::Naming
 
-    #include ActiveModel::AttributeMethods
     #include ActiveModel::Callbacks
     include ActiveModel::Conversion
     include ActiveModel::Dirty
@@ -26,6 +26,7 @@ module Cql
     #include ActiveModel::Translation
     include ActiveModel::Validations
 
+    include Cql::Model::AttributeMethods
     include Cql::Model::SchemaMethods
     include Cql::Model::FinderMethods
     include Cql::Model::PersistenceMethods
@@ -33,9 +34,23 @@ module Cql
 
     def initialize(attributes = {}, options = {})
       self.class.columns.each do |key, config|
+        a = config[:attribute_name].to_sym
+        
+        define_method a do
+          instance_variable_get("@_#{a}")
+        end
+        
+        unless config[:read_only]
+          define_method "#{a}=".to_sym do |val|
+            send("#{a}_will_change!".to_sym) unless val == instance_variable_get("@_#{a}")
+            instance_variable_set("@_#{a}", val)
+          end
+        end
+        
         class_eval do
-          attr_reader config[:attribute_name]
-          attr_writer config[:attribute_name] unless config[:read_only]
+          #attr_reader config[:attribute_name]
+          #attr_writer config[:attribute_name] unless config[:read_only]
+          define_attribute_method a
         end
       end
 
@@ -51,14 +66,6 @@ module Cql
       self
     end
 
-    def attributes
-      result = {}
-      self.class.columns.each do |key, config|
-        result[key] = instance_variable_get("@#{config[:attribute_name].to_s}".to_sym)
-      end
-      result
-    end
-    
     def primary_key_attributes
       attributes.select { |k, v| primary_key.include?(k) }
     end

@@ -10,6 +10,10 @@ module Cql::Model::PersistenceMethods
     query = Cql::Statement.sanitize("INSERT INTO #{table_name} (#{fields}) VALUES (#{placeholders})", values)
     Cql::Base.connection.execute(query)
 
+    # implement the ActiveModel::Dirty requirements
+    @previously_changed = changes
+    @changed_attributes.clear
+    
     @persisted = true
     self
   end
