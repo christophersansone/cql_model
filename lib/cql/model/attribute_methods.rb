@@ -5,8 +5,9 @@ module Cql::Model::AttributeMethods
   attr_reader :attributes
   
   def attributes=(hash)
-    column_keys = self.class.columns.keys
-    @attributes = hash.select { |key, value| column_keys.include?(key.to_sym) }  
+    @attributes = {}
+    hash.each { |k, v| @attributes[k.to_s] = v }
+    @attributes
   end
   
   

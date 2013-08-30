@@ -32,7 +32,7 @@ module Cql::Model::SchemaMethods
       column_name = options[:column_name] || attribute_name
 
       @columns ||= {}
-      @columns[column_name.to_sym] = {
+      @columns[column_name.to_s] = {
         attribute_name: attribute_name.to_sym,
       }.merge(options)
       

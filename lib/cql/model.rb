@@ -34,7 +34,7 @@ module Cql
     include Cql::Model::Dirty
 
     def initialize(attributes = {}, options = {})
-      @attributes = attributes
+      self.attributes = attributes.dup
       @metadata = options[:metadata]
       @persisted = false
       @deleted = false
@@ -43,7 +43,7 @@ module Cql
     end
 
     def primary_key_attributes
-      attributes.select { |k, v| primary_key.include?(k) }
+      attributes.select { |k, v| primary_key.include?(k.to_sym) }
     end
     
     def primary_value
@@ -72,11 +72,11 @@ module Cql
     private
     
     def read_attribute(name)
-      @attributes[name.to_sym]
+      @attributes[name.to_s]
     end
     
     def write_attribute(name, val)
-      @attributes[name.to_sym] = name
+      @attributes[name.to_s] = val
     end
 
   end
