@@ -35,6 +35,23 @@ module Cql::Model::SchemaMethods
       @columns[column_name.to_sym] = {
         attribute_name: attribute_name.to_sym,
       }.merge(options)
+      
+      module_eval <<-RUBY, __FILE__, __LINE__+1
+        def #{column_name}
+          read_attribute(#{column_name.inspect})
+        end
+      RUBY
+
+      unless options[:read_only]
+        module_eval <<-RUBY, __FILE__, __LINE__+1
+          def #{column_name}=(value)
+            write_attribute(#{column_name.inspect}, value)
+          end
+        RUBY
+      end
+
+      define_attribute_method name
+      
     end
   end
 end

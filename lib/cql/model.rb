@@ -13,6 +13,7 @@ require 'cql/model/schema_methods'
 require 'cql/model/finder_methods'
 require 'cql/model/persistence_methods'
 require 'cql/model/query_result'
+require 'cql/model/dirty'
 
 module Cql
   class Model
@@ -33,36 +34,10 @@ module Cql
     include Cql::Model::Dirty
 
     def initialize(attributes = {}, options = {})
-      self.class.columns.each do |key, config|
-        name = config[:attribute_name].to_sym
-
-        module_eval <<-RUBY, __FILE__, __LINE__+1
-          def #{name}
-            read_attribute(#{name.inspect})
-          end
-        RUBY
-
-        unless config[:read_only]
-          module_eval <<-RUBY, __FILE__, __LINE__+1
-            def #{name}=(value)
-              write_attribute(#{name.inspect}, value)
-            end
-          RUBY
-        end
-                          
-        class_eval do
-          #attr_reader config[:attribute_name]
-          #attr_writer config[:attribute_name] unless config[:read_only]
-          define_attribute_method name
-        end
-      end
-
-      @_attributes = {}
+      @attributes = attributes
       @metadata = options[:metadata]
       @persisted = false
       @deleted = false
-
-      attributes.each { |key, value| write_attribute(key, value) }
 
       self
     end
@@ -97,15 +72,11 @@ module Cql
     private
     
     def read_attribute(name)
-      @_attributes[name.to_sym]
+      @attributes[name.to_sym]
     end
     
     def write_attribute(name, val)
-      if val.nil?
-        @_attributes.delete(name.to_sym)
-      else
-        @_attributes[name.to_sym] = name
-      end
+      @attributes[name.to_sym] = name
     end
 
   end

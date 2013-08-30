@@ -1,6 +1,6 @@
 module Cql::Model::Dirty
-  include ActiveModel::Dirty
   extend ActiveSupport::Concern
+  include ActiveModel::Dirty
   
   def save
     super
