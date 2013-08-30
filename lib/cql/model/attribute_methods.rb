@@ -10,5 +10,14 @@ module Cql::Model::AttributeMethods
     @attributes
   end
   
+  private
+  
+  def read_attribute(name)
+    @attributes[name.to_s]
+  end
+  
+  def write_attribute(name, val)
+    @attributes[name.to_s] = val
+  end
   
 end

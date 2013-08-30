@@ -12,7 +12,7 @@ module Cql::Model::Dirty
   private
   
   def write_attribute(name, val)
-    attribute_will_change!(name.to_s) unless value == read_attribute(name)
+    attribute_will_change!(name.to_s) unless val == read_attribute(name)
     super
   end
 end

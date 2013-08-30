@@ -69,15 +69,5 @@ module Cql
       Cql::Model::QueryResult.new(cql_results, self)
     end
     
-    private
-    
-    def read_attribute(name)
-      @attributes[name.to_s]
-    end
-    
-    def write_attribute(name, val)
-      @attributes[name.to_s] = val
-    end
-
   end
 end
